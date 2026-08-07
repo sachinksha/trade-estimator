@@ -1,0 +1,26 @@
+{
+  "name": "trade-estimator",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "docs": "typedoc --entryPoints src/utils/tradeMath.ts src/composables/useTradeCalculator.ts src/composables/useHistoryQueue.ts src/constants/fees.config.ts --out docs"
+  },
+  "dependencies": {
+    "vue": "^3.5.40"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@vitejs/plugin-vue": "^6.0.8",
+    "@vue/tsconfig": "^0.9.1",
+    "typedoc": "^0.28.20",
+    "typescript": "~6.0.2",
+    "vite": "^8.2.0",
+    "vitest": "^4.1.10",
+    "vue-tsc": "^3.3.8"
+  }
+}

@@ -1,0 +1,145 @@
+/* =========================================
+   1. CSS VARIABLES & THEMING
+   ========================================= */
+:root {
+  /* Typography */
+  --font-family: 'Ubuntu', sans-serif;
+  --font-size-base: 18px; /* Nice big font size for easy reading */
+
+  /* Light Theme Colors (Cute, Pastel, Minimal) */
+  --bg-app: #fdfbf7;        /* Warm pastel white */
+  --bg-surface: #ffffff;    /* Card backgrounds */
+  --text-main: #2d3748;     /* Soft dark gray for readability */
+  --text-muted: #718096;
+  
+  --color-border: #e2e8f0;
+  
+  /* Status Colors (Pastel) */
+  --color-profit: #a7f3d0;  /* Pastel green */
+  --color-loss: #fecdd3;    /* Pastel red */
+  --color-neutral: #e2e8f0; /* Pastel gray/blue */
+  --color-accent: #3b82f6;  /* Clear, readable blue for light mode */
+  
+  --color-text-profit: #059669; /* Darker green for text readability */
+  --color-text-loss: #e11d48;   /* Darker red for text readability */
+
+  /* Layout & Styling */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.05);
+  
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+}
+
+/* Dark Theme Overrides */
+[data-theme="dark"] {
+  --bg-app: #18181b;       /* Slightly deeper dark background */
+  --bg-surface: #27272a;   /* Distinct surface color */
+  --text-main: #f8fafc;
+  --text-muted: #a1a1aa;
+  
+  --color-border: #3f3f46;
+  
+  --color-profit: #064e3b;  
+  --color-loss: #7f1d1d;    
+  
+  --color-accent: #60a5fa;  /* Bright, high-contrast pastel blue for text */
+  
+  --color-text-profit: #34d399; /* Bright mint green */
+  --color-text-loss: #fb7185;   /* Bright pastel pink/red */
+}
+
+/* =========================================
+   2. GLOBAL RESETS & BASE STYLES
+   ========================================= */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Typography elements */
+h1, h2, h3 {
+  font-weight: 500;
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-main);
+}
+
+h1 { font-size: 2.2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+
+/* =========================================
+   3. SHARED COMPONENT STYLES
+   ========================================= */
+/* Form Inputs */
+input[type="number"], 
+input[type="text"] {
+  width: 100%;
+  padding: var(--spacing-md);
+  font-family: var(--font-family);
+  font-size: 1.1rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+  transition: border-color 0.2s;
+  outline: none;
+}
+
+input:focus {
+  border-color: var(--color-accent);
+}
+
+/* Buttons */
+button {
+  font-family: var(--font-family);
+  font-size: 1rem;
+  font-weight: 500;
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: none;
+  border-radius: var(--radius-md);
+  background-color: var(--color-accent);
+  color: var(--text-main);
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.2s;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+/* Cards */
+.card {
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+}
+
+/* Utility layout classes to avoid inline styles */
+.flex-row { display: flex; align-items: center; gap: var(--spacing-md); }
+.flex-col { display: flex; flex-direction: column; gap: var(--spacing-md); }
+.space-between { justify-content: space-between; }
+.text-profit { color: var(--color-text-profit); }
+.text-loss { color: var(--color-text-loss); }
