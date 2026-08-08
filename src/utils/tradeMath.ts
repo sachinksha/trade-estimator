@@ -64,11 +64,12 @@ export function calculateTradeStats(params: TradeParams): TradeStats {
     // 5. Transaction Charges (Not rounded)
     const txn = value * config.txnChargePercentage;
 
-    // 6. DP Charge (Strictly Delivery Sell Leg Only)
+    // 6. DP Charge (Strictly delivery sell leg only; not applied to buy or intraday legs)
     const dp = (!isIntraday && !isBuy) ? (config.dpCharge || 0) : 0;
 
     // 7. GST @ 18%
-    const gst = (brokerage + txn + sebi + dp) * config.gstPercentage;
+    // DP is already configured as ₹15.34 (₹13 + 18% GST) for delivery sell trades.
+    const gst = (brokerage + txn + sebi) * config.gstPercentage;
 
     return brokerage + stampDuty + sebi + stt + txn + dp + gst;
   };

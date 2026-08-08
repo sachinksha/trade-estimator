@@ -22,7 +22,9 @@ export const BROKERAGE_CONFIG = {
     stampDutyPercentage: 0.00015,
     /** Goods and Services Tax (GST) percentage applied to taxable charges. */
     gstPercentage: 0.18,
-    /** Depository Participant (DP) flat charge applied when shares leave the demat account (Sell). */
+    /** Depository Participant (DP) flat charge applied when shares leave the demat account (Sell).
+     *  This is the effective charge of ₹13 + 18% GST = ₹15.34.
+     */
     dpCharge: 15.34,
   },
   

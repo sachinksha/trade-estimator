@@ -28,4 +28,17 @@ describe('Trade Math Calculations (Based on CN Exp Wrkg.xlsx)', () => {
     expect(stats.netProfitAtTarget).toBeCloseTo(21809.05, 2);
   });
 
+  it('should apply delivery DP charges only on the sell leg', () => {
+    const stats = calculateTradeStats({
+      buyPrice: 100,
+      qty: 100,
+      targetPrice: 105,
+      slPrice: 0,
+      tradeType: 'delivery'
+    });
+
+    expect(stats.totalExpensesAtTarget).toBeCloseTo(38.12, 2);
+    expect(stats.totalExpensesAtTarget).toBeGreaterThan(15.34);
+  });
+
 });
