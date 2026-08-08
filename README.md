@@ -3,7 +3,7 @@
 
 A sleek, purely client-side web application built to simulate equity trades and estimate expenses, net profit, and stop-loss margins for the Indian stock market. 
 
-**Live Demo:** [Deploying on Vercel soon - URL_PLACEHOLDER]
+**Live Here:** https://trade-estimator-equity.vercel.app/
 
 This tool is designed for precise risk management and profit planning. It perfectly mimics complex brokerage tax structures (Brokerage, STT, Exchange Txn Fees, GST, SEBI charges, Stamp Duty, and DP charges) to give you the exact Net P/L you can expect from a trade.
 
