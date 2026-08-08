@@ -1,48 +1,27 @@
 import { BROKERAGE_CONFIG } from '../constants/fees.config';
 
-/**
- * Parameters required to calculate trade statistics.
- */
 export interface TradeParams {
-  /** The average buy price per share in Rupees (₹). */
   buyPrice: number;
-  /** The number of shares purchased. */
   qty: number;
-  /** The intended selling price for a profitable exit. */
   targetPrice: number;
-  /** The intended selling price for a stop-loss exit. */
   slPrice: number;
-  /** The nature of the trade, dictating which tax bracket to apply. */
   tradeType: 'delivery' | 'intraday';
 }
 
-/**
- * The complete statistical breakdown of a trade's expenses and outcomes.
- */
 export interface TradeStats {
-  /** Total capital required to initiate the buy order, excluding buy-side taxes. */
   grossInvestment: number;
-  /** Absolute profit at the target price, before taxes are deducted. */
   grossProfitAtTarget: number;
-  /** Actual take-home profit at the target price, after all taxes and fees. */
   netProfitAtTarget: number;
-  /** The sum of all buy-side and sell-side expenses for the target scenario. */
   totalExpensesAtTarget: number;
-  /** Absolute loss at the stop-loss price, before taxes are added. */
   grossLossAtSl: number;
-  /** Actual total capital lost at the stop-loss price, including all taxes and fees. */
   netLossAtSl: number; 
-  /** The sum of all buy-side and sell-side expenses for the stop-loss scenario. */
   totalExpensesAtSl: number;
 }
 
 /**
  * Computes all related trade expenses and net P/L based on input prices.
- * This mirrors standard discount broker formulas (e.g., Zerodha) precisely,
- * taking into account STT rounding, DP charges, and GST.
- * 
- * @param {TradeParams} params - The price, quantity, and trade type configurations.
- * @returns {TradeStats} A comprehensive breakdown of gross and net figures for both target and SL.
+ * Formula strictly adheres to the 'CN Exp Wrkg.xlsx' trusted source, 
+ * calculating Buy and Sell legs as completely independent entries.
  */
 export function calculateTradeStats(params: TradeParams): TradeStats {
   if (params.qty <= 0 || params.buyPrice <= 0) {
@@ -54,44 +33,60 @@ export function calculateTradeStats(params: TradeParams): TradeStats {
   }
 
   const config = BROKERAGE_CONFIG[params.tradeType];
-  const buyValue = params.buyPrice * params.qty; 
+  const buyValue = params.buyPrice * params.qty;
+  const isIntraday = params.tradeType === 'intraday';
 
-  /**
-   * Internal helper to calculate the exact exit expenses and net P/L for a given sell price.
-   * Calculates the full round-trip (buy + sell) taxes dynamically.
-   */
+  // --- INDEPENDENT LEG CALCULATOR ---
+  const calculateLegExpenses = (value: number, isBuy: boolean) => {
+    // 1. Brokerage
+    let brokerage = 0;
+    if (isIntraday) {
+      brokerage = Math.min(config.brokerageMax, value * config.brokeragePercentage);
+    } else {
+      // Per CN Exp Wrkg.xlsx, delivery brokerage flat fee applies only to the first leg
+      brokerage = isBuy ? (config.brokerageFlat || 0) : 0; 
+    }
+
+    // 2. Stamp Duty (Strictly Buy Leg Only, Rounded)
+    const stampDuty = isBuy ? Math.round(value * config.stampDutyPercentage) : 0;
+
+    // 3. SEBI Fees (Not rounded)
+    const sebi = value * config.sebiChargePercentage;
+
+    // 4. STT (Rounded)
+    let stt = 0;
+    if (isIntraday) {
+      stt = isBuy ? 0 : Math.round(value * config.sttPercentage);
+    } else {
+      stt = Math.round(value * config.sttPercentage);
+    }
+
+    // 5. Transaction Charges (Not rounded)
+    const txn = value * config.txnChargePercentage;
+
+    // 6. DP Charge (Strictly Delivery Sell Leg Only)
+    const dp = (!isIntraday && !isBuy) ? (config.dpCharge || 0) : 0;
+
+    // 7. GST @ 18%
+    const gst = (brokerage + txn + sebi + dp) * config.gstPercentage;
+
+    return brokerage + stampDuty + sebi + stt + txn + dp + gst;
+  };
+
+  // Calculate the Buy Leg exactly once
+  const buyExpenses = calculateLegExpenses(buyValue, true);
+
+  // --- EXIT SCENARIO CALCULATOR ---
   const calculateExitScenario = (sellPrice: number) => {
     if (sellPrice <= 0) {
-      return { grossPnL: 0, netPnL: 0, totalExpenses: 0 };
+      return { grossPnL: 0, netPnL: 0, totalExpenses: buyExpenses };
     }
 
-    const F2 = buyValue;
-    const H2 = sellPrice * params.qty;
-    let totalExpenses = 0;
-
-    if (params.tradeType === 'intraday') {
-      const buyBrokerage = Math.min(config.brokerageMax, F2 * config.brokeragePercentage);
-      const sellBrokerage = Math.min(config.brokerageMax, H2 * config.brokeragePercentage);
-      const stt = Math.round(H2 * config.sttPercentage);
-      const stampDuty = F2 * config.stampDutyPercentage;
-      const txnCharges = (F2 + H2) * config.txnChargePercentage;
-      const sebiCharges = (F2 + H2) * config.sebiChargePercentage;
-      const gst = config.gstPercentage * (buyBrokerage + sellBrokerage + txnCharges + sebiCharges);
-
-      totalExpenses = buyBrokerage + sellBrokerage + stt + stampDuty + txnCharges + sebiCharges + gst;
-    } else {
-      const baseBrokerage = config.brokerageFlat || 0.01;
-      const stt = Math.round((F2 + H2) * config.sttPercentage);
-      const stampDuty = F2 * config.stampDutyPercentage;
-      const txnCharges = (F2 + H2) * config.txnChargePercentage;
-      const sebiCharges = (F2 + H2) * config.sebiChargePercentage;
-      const gst = config.gstPercentage * (baseBrokerage + txnCharges + sebiCharges);
-      const dpCharges = config.dpCharge || 15.34;
-
-      totalExpenses = baseBrokerage + stt + stampDuty + txnCharges + sebiCharges + gst + dpCharges;
-    }
-
-    const grossPnL = H2 - F2;
+    const sellValue = sellPrice * params.qty;
+    const sellExpenses = calculateLegExpenses(sellValue, false);
+    
+    const totalExpenses = buyExpenses + sellExpenses;
+    const grossPnL = sellValue - buyValue;
     const netPnL = grossPnL - totalExpenses;
 
     return { grossPnL, netPnL, totalExpenses };
@@ -102,9 +97,11 @@ export function calculateTradeStats(params: TradeParams): TradeStats {
 
   return {
     grossInvestment: buyValue,
+    
     grossProfitAtTarget: targetScenario.grossPnL,
     netProfitAtTarget: targetScenario.netPnL,
     totalExpensesAtTarget: targetScenario.totalExpenses,
+    
     grossLossAtSl: slScenario.grossPnL,
     netLossAtSl: slScenario.netPnL,
     totalExpensesAtSl: slScenario.totalExpenses

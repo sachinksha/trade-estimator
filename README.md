@@ -13,13 +13,11 @@ This tool is designed for precise risk management and profit planning. It perfec
 
 ## Key Features
 
-* **Dynamic Two-Way Binding:** Adjust your desired Net Profit %, Absolute Profit (₹), or Target Price, and watch the other variables reverse-calculate instantly using a built-in binary search algorithm.
-* **Risk Management (Stop Loss):** Define your maximum acceptable absolute loss (e.g., "I only want to lose ₹500") and the program will calculate the exact Stop Loss price required to honor that limit after taxes.
-* **Accurate Expense Simulation:** Expense formulas are strictly matched to standard Indian discount broker models (like Zerodha), handling both Delivery and Intraday tax brackets separately.
-* **History Queue:** Temporarily stores your last 10 simulation runs for easy comparison. Click on any historical record to instantly repopulate it into the estimator board. 
-* **Privacy First:** 100% client-side computation. No data is persisted on any server, and state clears on a hard refresh.
-* **Beautiful Pastel UI:** Minimalist, responsive design with a custom Light/Dark mode toggle, utilizing smooth CSS variables and the 'Ubuntu' font.
-
+* **Dynamic Two-Way Binding:** Adjust your desired Net Profit %, Absolute Profit (₹), or Target Price, and watch the other variables reverse-calculate instantly.
+* **Risk Management (Stop Loss):** Define your maximum acceptable absolute loss and the program will calculate the exact Stop Loss price required.
+* **Independent Leg Calculation:** Expense simulation is modeled strictly after standard ledger logic (referencing `CN Exp Wrkg.xlsx`), splitting the Buy and Sell transactions into separate entries to ensure penny-perfect rounding for Stamp Duty, STT, and GST. 
+* **History Queue:** Temporarily stores your last 10 simulation runs for easy comparison.
+* **Privacy First:** 100% client-side computation.
 ---
 
 ## Tech Stack

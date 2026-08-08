@@ -1,9 +1,7 @@
 /**
  * Configuration object defining the exact fee structures for Indian equity trades.
- * These values mirror the standard discount broker (e.g., Zerodha) and 
- * government tax calculations.
- * 
- * Update these constants if government tax brackets or broker policies change.
+ * Calculations are strictly modeled after the 'CN Exp Wrkg.xlsx' trusted source document,
+ * executing independent Buy and Sell leg transaction entries.
  */
 export const BROKERAGE_CONFIG = {
   /** Fee structure for equity delivery trades (holding overnight or longer). */
