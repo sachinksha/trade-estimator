@@ -1,5 +1,6 @@
 <script setup lang="ts">
-// Using defineModel for seamless two-way binding with the parent component
+import StepperInput from './StepperInput.vue'; // <--- NEW IMPORT
+
 const symbol = defineModel<string>('symbol');
 const buyPrice = defineModel<number | ''>('buyPrice');
 const qty = defineModel<number | ''>('qty');
@@ -44,28 +45,26 @@ const tradeType = defineModel<'delivery' | 'intraday'>('tradeType');
         </div>
       </div>
 
-      <!-- Buy Price -->
+      <!-- Buy Price (Using Stepper) -->
       <div class="input-group">
         <label for="buyPrice">Avg Buy Price (₹)</label>
-        <input 
+        <StepperInput 
           id="buyPrice" 
-          type="number" 
           v-model="buyPrice" 
-          min="0" 
-          step="0.05" 
+          :min="0" 
+          :step="0.05" 
           placeholder="0.00" 
         />
       </div>
 
-      <!-- Quantity -->
+      <!-- Quantity (Using Stepper) -->
       <div class="input-group">
         <label for="qty">Quantity</label>
-        <input 
+        <StepperInput 
           id="qty" 
-          type="number" 
           v-model="qty" 
-          min="1" 
-          step="1" 
+          :min="1" 
+          :step="1" 
           placeholder="0" 
         />
       </div>
@@ -98,10 +97,31 @@ const tradeType = defineModel<'delivery' | 'intraday'>('tradeType');
   gap: var(--spacing-sm);
 }
 
+/* Find the 'label' selector and update it */
 label {
   font-weight: 500;
   font-size: 0.95rem;
   color: var(--text-muted);
+  text-align: center; /* Center on mobile */
+}
+
+@media (min-width: 600px) {
+  label {
+    text-align: left; /* Left align on desktop */
+  }
+}
+
+/* Also ensure the title is centered on mobile */
+.trade-form h2 {
+  margin-bottom: var(--spacing-lg);
+  color: var(--color-accent);
+  text-align: center;
+}
+
+@media (min-width: 600px) {
+  .trade-form h2 {
+    text-align: left;
+  }
 }
 
 /* Custom Pill Toggle styling replacing standard radio buttons */

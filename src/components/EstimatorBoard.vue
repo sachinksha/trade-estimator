@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import StepperInput from './StepperInput.vue';
 import type { TradeStats } from '../utils/tradeMath';
 
 const targetPrice = defineModel<number | ''>('targetPrice');
@@ -78,14 +79,15 @@ const isReady = computed(() => Number(props.buyPrice) > 0 && Number(props.qty) >
       <div class="zone target-zone">
         <h3>Target (Take Profit)</h3>
         
+        <!-- TARGET SECTION GRID -->
         <div class="input-grid">
           <div class="input-group">
             <label>Target Price (₹)</label>
-            <input type="number" v-model="targetPrice" min="0" step="0.5" />
+            <StepperInput v-model="targetPrice" :min="0" :step="0.5" />
           </div>
           <div class="input-group">
             <label>Desired Net Profit (₹)</label>
-            <input type="number" v-model="targetNetProfitInput" step="100" />
+            <StepperInput v-model="targetNetProfitInput" :min="0" :step="100" />
           </div>
         </div>
 
@@ -126,11 +128,11 @@ const isReady = computed(() => Number(props.buyPrice) > 0 && Number(props.qty) >
         <div class="input-grid">
           <div class="input-group">
             <label>Stop Loss Price (₹)</label>
-            <input type="number" v-model="slPrice" min="0" step="0.5" />
+            <StepperInput v-model="slPrice" :min="0" :step="0.5" />
           </div>
           <div class="input-group">
             <label>Max Acceptable Loss (₹)</label>
-            <input type="number" v-model="slNetLossInput" step="100" />
+            <StepperInput v-model="slNetLossInput" :min="0" :step="100" />
           </div>
         </div>
 
@@ -216,9 +218,15 @@ const isReady = computed(() => Number(props.buyPrice) > 0 && Number(props.qty) >
 
 .input-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr; /* Stack vertically on mobile */
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-md);
+}
+
+@media (min-width: 600px) {
+  .input-grid {
+    grid-template-columns: 1fr 1fr; /* Side-by-side on desktop */
+  }
 }
 
 .input-group {
@@ -230,6 +238,23 @@ const isReady = computed(() => Number(props.buyPrice) > 0 && Number(props.qty) >
 .input-group label {
   font-size: 0.85rem;
   color: var(--text-muted);
+  text-align: center; /* Center align labels on mobile */
+}
+
+@media (min-width: 600px) {
+  .input-group label {
+    text-align: left;
+  }
+}
+
+/* Optional: center align the zone titles on mobile */
+.zone h3 {
+  text-align: center;
+}
+@media (min-width: 600px) {
+  .zone h3 {
+    text-align: left;
+  }
 }
 
 .slider-group {

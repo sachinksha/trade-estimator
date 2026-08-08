@@ -159,10 +159,17 @@ const handleSaveRecord = () => {
 /* Main Layout Grid */
 .main-container {
   flex: 1;
-  padding: var(--spacing-xl);
+  padding: var(--spacing-md) var(--spacing-sm); /* Drastically reduced mobile padding */
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
+  overflow-x: hidden; /* Failsafe against horizontal scrolling */
+}
+
+@media (min-width: 992px) {
+  .main-container {
+    padding: var(--spacing-xl); /* Restore desktop padding */
+  }
 }
 
 .layout-grid {
