@@ -45,11 +45,12 @@ const adjust = (direction: 1 | -1) => {
   display: flex;
   align-items: center;
   background-color: var(--bg-surface);
-  border: 2px solid var(--color-border);
+  border: 1px solid var(--color-border); /* Thinner border */
   border-radius: var(--radius-md);
   transition: border-color 0.2s;
   overflow: hidden;
-  height: 100%;
+  height: 40px; /* Lock height */
+  width: 100%;
 }
 
 .stepper-wrapper:focus-within {
@@ -58,15 +59,13 @@ const adjust = (direction: 1 | -1) => {
 
 .stepper-wrapper input {
   flex: 1;
-  border: none; /* Remove global border since wrapper has it */
+  border: none;
   border-radius: 0;
   background: transparent;
-  padding: var(--spacing-md) 0; 
+  padding: 0 var(--spacing-xs);
+  height: 100%;
+  text-align: center;
   outline: none;
-}
-
-.stepper-wrapper input:focus {
-  border-color: transparent; /* Disable the global focus ring */
 }
 
 .stepper-btn {
@@ -74,24 +73,22 @@ const adjust = (direction: 1 | -1) => {
   color: var(--text-main);
   border: none;
   border-radius: 0;
-  padding: 0 var(--spacing-lg); /* Wide touch area for mobile */
-  font-size: 1.25rem;
-  font-weight: bold;
+  width: 40px; /* Fixed square touch target (40x40) */
   height: 100%;
-  cursor: pointer;
+  padding: 0;
+  font-size: 1.2rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
   transition: background-color 0.1s;
 }
 
 .stepper-btn:hover {
   background-color: var(--color-border);
-  opacity: 1;
 }
 
 .stepper-btn:active {
-  transform: scale(0.95);
   background-color: var(--color-accent);
   color: var(--bg-app);
 }

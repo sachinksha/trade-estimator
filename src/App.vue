@@ -3,9 +3,8 @@ import { ref, onMounted } from 'vue';
 import TradeInputForm from './components/TradeInputForm.vue';
 import EstimatorBoard from './components/EstimatorBoard.vue';
 import HistoryQueue from './components/HistoryQueue.vue';
-
+import { useHistoryQueue, type HistoryRecord } from './composables/useHistoryQueue';
 import { useTradeCalculator } from './composables/useTradeCalculator';
-import { useHistoryQueue } from './composables/useHistoryQueue';
 
 // --- Theme Management ---
 const isDark = ref(false);
@@ -46,11 +45,11 @@ const {
 
 const { addRecord } = useHistoryQueue();
 
-// Handler to save current estimations to the queue
 const handleSaveRecord = () => {
   if (Number(buyPrice.value) > 0 && Number(qty.value) > 0) {
     addRecord({
       symbol: symbol.value || 'UNNAMED',
+      tradeType: tradeType.value, // <--- NEW: Save tradeType
       buyPrice: Number(buyPrice.value),
       qty: Number(qty.value),
       targetPrice: Number(targetPrice.value),
@@ -58,9 +57,22 @@ const handleSaveRecord = () => {
       netProfit: tradeStats.value.netProfitAtTarget
     });
     
-    // Automatically reset the inputs for a new entry
-    resetCalculator();
+    resetCalculator(); 
   }
+};
+
+// NEW: Handle clicking a record in the queue
+const handleSelectTrade = (record: HistoryRecord) => {
+  // Restore all values from the selected record into the calculator state
+  symbol.value = record.symbol === 'UNNAMED' ? '' : record.symbol;
+  tradeType.value = record.tradeType;
+  buyPrice.value = record.buyPrice;
+  qty.value = record.qty;
+  targetPrice.value = record.targetPrice;
+  slPrice.value = record.slPrice;
+  
+  // Smoothly scroll back to the top of the form (super helpful on mobile!)
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 </script>
 
@@ -113,7 +125,7 @@ const handleSaveRecord = () => {
 
         <!-- Right Column: Sidebar / History -->
         <div class="right-col">
-          <HistoryQueue />
+            <HistoryQueue @selectTrade="handleSelectTrade" />
         </div>
 
       </div>
@@ -129,12 +141,11 @@ const handleSaveRecord = () => {
   flex-direction: column;
 }
 
-/* Header Styling */
+/* Ultra-Compact Header */
 .app-header {
-  padding: var(--spacing-md) var(--spacing-xl);
+  padding: var(--spacing-sm) var(--spacing-md);
   background-color: var(--bg-surface);
   border-bottom: 1px solid var(--color-border);
-  box-shadow: var(--shadow-sm);
 }
 
 .header-content {
@@ -147,9 +158,11 @@ const handleSaveRecord = () => {
 
 .theme-toggle {
   background-color: transparent;
-  border: 2px solid var(--color-border);
+  border: 1px solid var(--color-border);
   color: var(--text-main);
-  padding: var(--spacing-sm) var(--spacing-md);
+  height: 32px; /* Smaller button just for the header */
+  padding: 0 var(--spacing-sm);
+  font-size: 0.8rem;
 }
 
 .theme-toggle:hover {
@@ -159,29 +172,27 @@ const handleSaveRecord = () => {
 /* Main Layout Grid */
 .main-container {
   flex: 1;
-  padding: var(--spacing-md) var(--spacing-sm); /* Drastically reduced mobile padding */
+  padding: var(--spacing-md) var(--spacing-sm); /* Minimal padding for mobile */
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
-  overflow-x: hidden; /* Failsafe against horizontal scrolling */
-}
-
-@media (min-width: 992px) {
-  .main-container {
-    padding: var(--spacing-xl); /* Restore desktop padding */
-  }
+  overflow-x: hidden;
 }
 
 .layout-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--spacing-xl);
+  gap: var(--spacing-md); /* Reduced from xl */
   align-items: start;
 }
 
 @media (min-width: 992px) {
+  .main-container {
+    padding: var(--spacing-lg); 
+  }
   .layout-grid {
     grid-template-columns: 2fr 1fr;
+    gap: var(--spacing-lg); /* Tighter column gap */
   }
 }
 </style>

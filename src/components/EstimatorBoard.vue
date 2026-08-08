@@ -177,9 +177,15 @@ const isReady = computed(() => Number(props.buyPrice) > 0 && Number(props.qty) >
 <style scoped>
 .board h2 {
   color: var(--color-accent);
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  text-align: center; /* Center on mobile to match Trade Setup */
 }
 
+@media (min-width: 600px) {
+  .board h2 {
+    text-align: left; /* Left align on desktop */
+  }
+}
 .empty-state {
   text-align: center;
   padding: var(--spacing-xl) 0;

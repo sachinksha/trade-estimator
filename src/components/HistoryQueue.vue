@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useHistoryQueue } from '../composables/useHistoryQueue';
+import { useHistoryQueue, type HistoryRecord } from '../composables/useHistoryQueue';
 
 const { history, clearHistory } = useHistoryQueue();
 
-// Reverse the array for display so the newest entry is always on top
+const emit = defineEmits<{
+  (e: 'selectTrade', record: HistoryRecord): void;
+}>();
+
 const displayHistory = computed(() => {
   return [...history.value].reverse();
 });
 
-// Currency formatter
 const formatCurrency = (val: number) => {
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
@@ -37,10 +39,24 @@ const formatCurrency = (val: number) => {
         class="history-item"
       >
         <div class="item-header flex-row space-between">
-          <strong>{{ record.symbol || 'UNNAMED' }}</strong>
-          <span class="text-profit net-badge">
-            +{{ formatCurrency(record.netProfit) }}
-          </span>
+          <div class="flex-row">
+            <strong>{{ record.symbol || 'UNNAMED' }}</strong>
+            <span class="type-badge">{{ record.tradeType === 'intraday' ? 'INT' : 'DEL' }}</span>
+          </div>
+          
+          <div class="flex-row">
+            <span class="text-profit net-badge">
+              +{{ formatCurrency(record.netProfit) }}
+            </span>
+            <!-- NEW: Dedicated Load Button -->
+            <button 
+              class="load-btn" 
+              @click="emit('selectTrade', record)" 
+              title="Load into Estimator"
+            >
+              Load
+            </button>
+          </div>
         </div>
         
         <div class="item-details">
@@ -76,7 +92,7 @@ const formatCurrency = (val: number) => {
 
 .history-sidebar h2 {
   margin-bottom: 0;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
 }
 
 .count-badge {
@@ -100,24 +116,34 @@ const formatCurrency = (val: number) => {
   flex: 1;
 }
 
+/* REMOVED the pointer cursor and active state from the card */
 .history-item {
   background-color: var(--bg-app);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: var(--spacing-md);
-  transition: transform 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .history-item:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-sm);
-  border-color: var(--color-accent);
 }
 
 .item-header {
   margin-bottom: var(--spacing-sm);
   border-bottom: 1px dashed var(--color-border);
   padding-bottom: var(--spacing-sm);
+}
+
+.type-badge {
+  font-size: 0.65rem;
+  background-color: var(--color-border);
+  color: var(--text-muted);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
 }
 
 .net-badge {
@@ -129,6 +155,22 @@ const formatCurrency = (val: number) => {
 
 [data-theme="dark"] .net-badge {
   background-color: rgba(6, 78, 59, 0.3);
+}
+
+/* NEW: Compact Load Button Styles */
+.load-btn {
+  height: 26px; /* Touch-safe but compact */
+  padding: 0 var(--spacing-sm);
+  font-size: 0.75rem;
+  background-color: transparent;
+  color: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  border-radius: 4px;
+}
+
+.load-btn:hover {
+  background-color: var(--color-accent);
+  color: var(--bg-surface);
 }
 
 .item-details {
@@ -153,6 +195,6 @@ const formatCurrency = (val: number) => {
 
 .clear-btn:hover {
   background-color: var(--color-loss);
-  color: var(--text-main);
+  color: var(--bg-surface);
 }
 </style>
