@@ -1,5 +1,5 @@
 import { ref, computed, watch } from 'vue';
-import { calculateTradeStats, calculateSellPriceForNetProfit, calculateSlPriceForNetLoss } from '../utils/tradeMath';
+import { calculateTradeStats, calculateSellPriceForNetProfit, calculateSlPriceForNetLoss, calculateBreakEvenPrice } from '../utils/tradeMath';
 
 /**
  * Central state management and business logic hook for the Trade Estimator.
@@ -34,6 +34,16 @@ export function useTradeCalculator() {
       slPrice: Number(slPrice.value) || 0,
       tradeType: tradeType.value
     });
+  });
+
+  /**
+   * The break-even selling price (rounded to 2 decimals) where net P/L becomes zero.
+   */
+  const breakEvenPrice = computed(() => {
+    const p = Number(buyPrice.value);
+    const q = Number(qty.value);
+    if (!p || !q) return 0;
+    return calculateBreakEvenPrice(p, q, tradeType.value);
   });
 
   /**
@@ -140,5 +150,7 @@ export function useTradeCalculator() {
     setSlFromPercentage,
     setSlFromNetLoss,
     resetCalculator
+    ,
+    breakEvenPrice
   };
 }

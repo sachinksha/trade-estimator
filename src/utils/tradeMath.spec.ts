@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { calculateTradeStats } from './tradeMath';
+import { calculateBreakEvenPrice } from './tradeMath';
 
 describe('Trade Math Calculations (Based on CN Exp Wrkg.xlsx)', () => {
 
@@ -39,6 +40,73 @@ describe('Trade Math Calculations (Based on CN Exp Wrkg.xlsx)', () => {
 
     expect(stats.totalExpensesAtTarget).toBeCloseTo(38.12, 2);
     expect(stats.totalExpensesAtTarget).toBeGreaterThan(15.34);
+  });
+
+  it('example: buy 5000 qty 200 sell 5050 should still be net profit (delivery)', () => {
+    const stats = calculateTradeStats({
+      buyPrice: 5000,
+      qty: 200,
+      targetPrice: 5050,
+      slPrice: 0,
+      tradeType: 'delivery'
+    });
+
+    // Gross PnL = 10000
+    expect(stats.grossProfitAtTarget).toBe(10000);
+
+    // Net PnL must remain positive after expenses
+    expect(stats.netProfitAtTarget).toBeGreaterThan(0);
+
+    // Break-even price must be below 5050 for this example
+    const be = calculateBreakEvenPrice(5000, 200, 'delivery');
+    expect(be).toBeLessThan(5050);
+    expect(be).toBeGreaterThanOrEqual(5000);
+  });
+
+  it('target causing loss should show negative net and negative percent', () => {
+    const stats = calculateTradeStats({
+      buyPrice: 100,
+      qty: 100,
+      targetPrice: 99, // selling below buy
+      slPrice: 0,
+      tradeType: 'delivery'
+    });
+
+    expect(stats.grossProfitAtTarget).toBe(-100);
+    expect(stats.netProfitAtTarget).toBeLessThan(0);
+
+    const percent = (stats.netProfitAtTarget / stats.grossInvestment) * 100;
+    expect(percent).toBeLessThan(0);
+  });
+
+  it('stop loss above buy should show positive net at SL and positive percent', () => {
+    const stats = calculateTradeStats({
+      buyPrice: 100,
+      qty: 100,
+      targetPrice: 0,
+      slPrice: 105, // SL above buy => would realize profit
+      tradeType: 'intraday'
+    });
+
+    // Gross PnL positive
+    expect(stats.grossLossAtSl).toBe(500);
+    // Net at SL should be positive in this scenario
+    expect(stats.netLossAtSl).toBeGreaterThan(0);
+
+    const percent = (stats.netLossAtSl / stats.grossInvestment) * 100;
+    expect(percent).toBeGreaterThan(0);
+  });
+
+  it('gross percent (buyPrice - slPrice)/buyPrice can be negative while net percent positive', () => {
+    const buyPrice = 100;
+    const slPrice = 105;
+    const stats = calculateTradeStats({ buyPrice, qty: 100, targetPrice: 0, slPrice, tradeType: 'intraday' });
+
+    const grossPercent = ((buyPrice - slPrice) / buyPrice) * 100;
+    expect(grossPercent).toBeLessThan(0);
+
+    const netPercent = (stats.netLossAtSl / stats.grossInvestment) * 100;
+    expect(netPercent).toBeGreaterThan(0);
   });
 
 });

@@ -36,6 +36,7 @@ const {
   tradeStats,
   targetNetProfitPercent,
   slGrossLossPercent,
+  breakEvenPrice,
   setTargetFromNetProfit,
   setTargetFromPercentage,
   setSlFromNetLoss,
@@ -114,6 +115,7 @@ const handleSelectTrade = (record: HistoryRecord) => {
             :qty="qty"
             :targetNetProfitPercent="targetNetProfitPercent"
             :slGrossLossPercent="slGrossLossPercent"
+            :breakEvenPrice="breakEvenPrice"
             @update:targetFromNetProfit="setTargetFromNetProfit"
             @update:targetFromPercent="setTargetFromPercentage"
             @update:slFromNetLoss="setSlFromNetLoss"

@@ -12,6 +12,7 @@ const props = defineProps<{
   qty: number | '';
   targetNetProfitPercent: number;
   slGrossLossPercent: number;
+  breakEvenPrice?: number;
 }>();
 
 const emit = defineEmits<{
@@ -38,14 +39,32 @@ const targetPercentInput = computed({
 
 // Slider for Stop Loss Gross %
 const slPercentInput = computed({
+  // Slider for Stop Loss Gross % (can be negative when SL is above buy price)
   get: () => Number(props.slGrossLossPercent.toFixed(2)),
   set: (val: number) => emit('update:slFromPercent', val)
 });
 
 // Slider & Input for Stop Loss Net Loss (in ₹)
 const slNetLossInput = computed({
-  get: () => Math.abs(Number(props.stats.netLossAtSl.toFixed(2))),
+  // Show signed net P/L at the configured SL price so profitable SLs display as positive
+  get: () => Number(props.stats.netLossAtSl.toFixed(2)),
+  // When user sets a "max acceptable loss" we still send the absolute loss value
+  // to the composable which expects a positive loss amount.
   set: (val: number) => emit('update:slFromNetLoss', Math.abs(val))
+});
+
+const isSlProfit = computed(() => Number(props.stats.netLossAtSl) > 0);
+const isTargetProfit = computed(() => Number(props.stats.netProfitAtTarget) > 0);
+
+const formatSigned = (val: number, decimals = 2) => {
+  if (val === 0) return (0).toFixed(decimals);
+  return (val > 0 ? `+${val.toFixed(decimals)}` : val.toFixed(decimals));
+};
+
+const slPercentDisplay = computed(() => {
+  const raw = Number(props.slGrossLossPercent);
+  const abs = Math.abs(raw).toFixed(2);
+  return (isSlProfit.value ? `+${abs}` : `-${abs}`);
 });
 
 // Helper for Indian Currency formatting
@@ -93,13 +112,13 @@ const isReady = computed(() => Number(props.buyPrice) > 0 && Number(props.qty) >
 
         <div class="slider-group">
           <div class="flex-row space-between">
-            <label>Target % (Net Return)</label>
-            <span class="text-profit">{{ targetPercentInput }}%</span>
+            <label>{{ isTargetProfit ? 'Target % (Net Return)' : 'Target % (Net Return - Loss)' }}</label>
+            <span :class="isTargetProfit ? 'text-profit' : 'text-loss'">{{ formatSigned(Number(targetPercentInput)) }}%</span>
           </div>
           <input 
             type="range" 
             v-model.number="targetPercentInput" 
-            min="0.5" max="20" step="0.1"
+            min="-50" max="50" step="0.1"
           />
         </div>
 
@@ -114,8 +133,8 @@ const isReady = computed(() => Number(props.buyPrice) > 0 && Number(props.qty) >
             <span>- {{ formatCurrency(stats.totalExpensesAtTarget) }}</span>
           </div>
           <hr class="divider" />
-          <div class="flex-row space-between result-row text-profit">
-            <span>Net Profit</span>
+          <div :class="['flex-row space-between result-row', isTargetProfit ? 'text-profit' : 'text-loss']">
+            <span>{{ isTargetProfit ? 'Net Profit' : 'Net Loss' }}</span>
             <strong>{{ formatCurrency(stats.netProfitAtTarget) }}</strong>
           </div>
         </div>
@@ -131,27 +150,30 @@ const isReady = computed(() => Number(props.buyPrice) > 0 && Number(props.qty) >
             <StepperInput v-model="slPrice" :min="0" :step="0.5" />
           </div>
           <div class="input-group">
-            <label>Max Acceptable Loss (₹)</label>
-            <StepperInput v-model="slNetLossInput" :min="0" :step="100" />
+            <label>{{ isSlProfit ? 'Expected Net at SL (₹)' : 'Max Acceptable Loss (₹)' }}</label>
+            <StepperInput v-model="slNetLossInput" :min="-9999999" :step="100" />
           </div>
         </div>
 
         <div class="slider-group">
           <div class="flex-row space-between">
-            <label>Max Loss %</label>
-            <span class="text-loss">{{ slPercentInput }}%</span>
+            <label>{{ isSlProfit ? 'Potential Gain %' : 'Max Loss %' }}</label>
+            <span :class="isSlProfit ? 'text-profit' : 'text-loss'">{{ slPercentDisplay }}%</span>
           </div>
           <input 
             type="range" 
             v-model.number="slPercentInput" 
-            min="0.5" max="20" step="0.1" 
+            min="-50" max="50" step="0.1" 
           />
         </div>
 
         <!-- NEW: Stop Loss Breakdown Details -->
+        <div class="break-even-note">
+          <small>Break-even Price: <strong>{{ formatCurrency(Number(props.breakEvenPrice || 0)) }}</strong> <em>({{ props.breakEvenPrice ? 'based on selected segment' : '' }})</em></small>
+        </div>
         <div class="breakdown">
           <div class="flex-row space-between">
-            <span>Gross Loss</span>
+            <span>Gross P/L</span>
             <span>{{ formatCurrency(stats.grossLossAtSl) }}</span>
           </div>
           <div class="flex-row space-between text-muted">
@@ -159,8 +181,8 @@ const isReady = computed(() => Number(props.buyPrice) > 0 && Number(props.qty) >
             <span>- {{ formatCurrency(stats.totalExpensesAtSl) }}</span>
           </div>
           <hr class="divider" />
-          <div class="flex-row space-between result-row text-loss">
-            <span>Net Loss</span>
+          <div :class="['flex-row space-between result-row', isSlProfit ? 'text-profit' : 'text-loss']">
+            <span>{{ isSlProfit ? 'Net Profit' : 'Net Loss' }}</span>
             <strong>{{ formatCurrency(stats.netLossAtSl) }}</strong>
           </div>
         </div>

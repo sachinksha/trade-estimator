@@ -149,6 +149,18 @@ export function calculateSellPriceForNetProfit(
 }
 
 /**
+ * Calculates the break-even selling price where net P/L equals zero (after expenses).
+ * A thin wrapper around `calculateSellPriceForNetProfit` with `desiredNetProfit` = 0.
+ */
+export function calculateBreakEvenPrice(
+  buyPrice: number,
+  qty: number,
+  tradeType: 'delivery' | 'intraday'
+): number {
+  return calculateSellPriceForNetProfit(buyPrice, qty, 0, tradeType);
+}
+
+/**
  * Reverse-calculates the required Stop Loss price to cap the net loss at a specific absolute amount.
  * Utilizes a binary search algorithm to account for complex dynamic tax brackets.
  * 
